@@ -8,5 +8,8 @@ export default defineConfig({
   dts: true,
   clean: true,
   sourcemap: false,
-  tsconfig: "tsconfig.build.json"
+  tsconfig: "tsconfig.build.json",
+  // JSDoc ships in the .d.ts files; copying it into the JS only inflates the bundle.
+  // Keep legal comments and pure annotations (consumers' tree-shaking uses them).
+  outputOptions: { comments: { legal: true, annotation: true, jsdoc: false } }
 });

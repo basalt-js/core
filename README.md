@@ -2,7 +2,38 @@
 
 The Basalt kernel: a micro-kernel plugin framework for TypeScript, built for codebases that LLMs help write.
 
-> **Status: M0 (scaffold).** The package builds, lints and tests, but exports nothing yet. M1 adds `defineFramework`, plugins, services, config and events.
+> **Status: M1 (kernel parity).** `defineFramework`, `definePlugin`, `defineService`, packs, config (defaults or Standard Schema), `emit`, and init/start/stop. Next: M2, lifecycle robustness (rollback, best-effort stop, timeouts, `signal`, disposal).
+
+```ts
+// framework (Layer 2)
+const site = defineFramework("site", {
+  config: { siteName: "Untitled" },
+  events: { "page:render": event<{ path: string }>("A page finished rendering") }
+});
+export const definePlugin = site.definePlugin;
+
+const routerPlugin = definePlugin("router", {
+  config: { basePath: "/" },
+  events: { "router:navigate": event<{ to: string }>("Route changed") },
+  state: ({ config }) => ({ current: config.basePath }),
+  api: ctx => ({
+    navigate: (to: string) => {
+      ctx.state.current = to;
+      ctx.emit("router:navigate", { to });
+    }
+  })
+});
+
+const composed = site.compose({ plugins: [routerPlugin] });
+export const createApp = composed.createApp;
+
+// app (Layer 3)
+const app = await createApp({ config: { siteName: "Blog" } });
+await app.start();
+app.router.navigate("/about");
+await app.settled();
+await app.stop();
+```
 
 ## Design
 

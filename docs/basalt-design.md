@@ -614,7 +614,7 @@ event.map<Map>(descriptions?)       // bulk notify declarations from a pre-decla
 
 | Call | Event kinds | Returns | Semantics |
 |---|---|---|---|
-| `emit(name, p)` | notify | `void` | Fire-and-forget. The dispatch is **queued as a microtask** (no handler runs inside `emit()`, which fixes the half-sync behaviour in Q9). It is tracked for `settled()`, and errors go to `onError`. |
+| `emit(name, p)` | notify | `void` | Fire-and-forget. The dispatch is **queued as a microtask** (no handler runs inside `emit()`, which fixes the half-sync behaviour in Q9). It is tracked for `settled()`. Each failing handler is reported to `onError` as `E_HANDLER_FAILED` (with the plugin and `cause`), and the remaining handlers still run. |
 | `await dispatch(name, p)` | notify | `DispatchResult` | Runs every handler sequentially in plugin order. If any handler fails, it still runs the rest, then **rejects** with `E_DISPATCH_FAILED` (an `AggregateError` with per-plugin causes). It does not call `onError`, because the caller owns the failure. |
 | `await collect(name, p)` | collect | `R[]` | Handlers run sequentially. Results come back in plugin order. Errors behave as in `dispatch`. |
 | `await pipe(name, v)` | pipe | `T` | Each handler receives the previous handler's output. If a handler throws, the pipe rejects. This replaces Moku's hand-rolled `api.use(fn)` middleware pattern. |
@@ -849,6 +849,7 @@ type TraceRecord =
 | `E_START_FAILED` / `E_STOP_FAILED` | Lifecycle failure (with `cause` / `errors`). |
 | `E_TIMEOUT` | A lifecycle target exceeded its timeout. |
 | `E_DISPATCH_FAILED` | One or more handlers failed in `dispatch`/`collect`/`pipe`. |
+| `E_HANDLER_FAILED` | A hook handler failed during an `emit`. Reported through `onError`, not thrown; `cause` holds the original error. |
 | `E_SHARED_READONLY` | A write went through the shared-state view. |
 | `E_EMIT_AFTER_STOP` | An emit happened after `stopped`. Reported, not thrown. |
 

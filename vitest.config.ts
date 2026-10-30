@@ -4,6 +4,7 @@ export default defineConfig({
   test: {
     // Projects stay valid while they are still empty (integration and types fill up in M1+).
     passWithNoTests: true,
+    setupFiles: ["./tests/setup.ts"],
     projects: [
       {
         extends: true,
