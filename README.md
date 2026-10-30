@@ -57,7 +57,7 @@ bun run check   # typecheck, lint, tests with coverage, build, package validatio
 | `bun run size` | Fails if `dist/index.mjs` is over 12 KB gzipped |
 | `bun run validate` | `publint` + `attw` |
 
-Shared tooling comes from [`@basalt-js/ci`](https://github.com/basalt-js/ci). For now it is linked from the sibling folder (`file:../ci`).
+Shared tooling comes from [`@basalt-js/ci`](https://github.com/basalt-js/ci) on npm.
 
 ## License
 

@@ -63,7 +63,7 @@
   },
   "devDependencies": {
     "@arethetypeswrong/cli": "0.18.2",
-    "@basalt-js/ci": "link:@basalt-js/ci",
+    "@basalt-js/ci": "^0.1.0",
     "@biomejs/biome": "2.4.2",
     "@vitest/coverage-istanbul": "4.0.18",
     "eslint": "^9",
