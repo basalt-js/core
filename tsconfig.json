@@ -1,0 +1,9 @@
+{
+  "extends": "@basalt-js/ci/tsconfig.base.json",
+  "compilerOptions": {
+    // The kernel must run on Bun, Node, browsers and edge workers, so no runtime's
+    // globals are in scope by default. Tests import what they need from vitest.
+    "types": []
+  },
+  "include": ["src", "tests", "*.config.ts"]
+}

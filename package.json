@@ -1,0 +1,82 @@
+{
+  "name": "@basalt-js/core",
+  "version": "0.0.0",
+  "description": "Basalt kernel: a micro-kernel plugin framework for TypeScript, built for LLM-scale codebases.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/basalt-js/core.git"
+  },
+  "homepage": "https://github.com/basalt-js/core#readme",
+  "bugs": {
+    "url": "https://github.com/basalt-js/core/issues"
+  },
+  "keywords": [
+    "plugin",
+    "framework",
+    "micro-kernel",
+    "typescript",
+    "lifecycle",
+    "event-bus",
+    "type-safe"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.mts",
+        "default": "./dist/index.mjs"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "sideEffects": false,
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=24.0.0",
+    "bun": ">=1.4.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsdown",
+    "typecheck": "tsc --noEmit",
+    "lint": "biome check . && eslint .",
+    "lint:fix": "biome check --write . && eslint --fix .",
+    "format": "biome format --write .",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "validate": "publint && attw --pack . --profile node16",
+    "size": "basalt-size dist/index.mjs --max 12kb",
+    "check": "bun run typecheck && bun run lint && bun run test:coverage && bun run build && bun run validate && bun run size"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "0.18.2",
+    "@basalt-js/ci": "link:@basalt-js/ci",
+    "@biomejs/biome": "2.4.2",
+    "@vitest/coverage-istanbul": "4.0.18",
+    "eslint": "^9",
+    "lefthook": "2.1.1",
+    "publint": "0.3.17",
+    "tsdown": "0.22.1",
+    "typescript": "6.0.3",
+    "vitest": "4.0.18"
+  },
+  "trustedDependencies": [
+    "lefthook"
+  ],
+  "overrides": {
+    "fflate": "0.8.2"
+  }
+}

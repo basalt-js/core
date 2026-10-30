@@ -1,0 +1,13 @@
+pre-commit:
+  jobs:
+    - name: biome
+      glob: "*.{ts,js,json,jsonc}"
+      run: bunx biome check --write --no-errors-on-unmatched --files-ignore-unknown=true --colors=off {staged_files}
+      stage_fixed: true
+    - name: eslint
+      glob: "*.{ts,js}"
+      run: bunx eslint --no-fix {staged_files}
+    - name: typecheck
+      run: bun run typecheck
+    - name: test
+      run: bun run test

@@ -1,0 +1,28 @@
+name: Release
+
+# The file name is a contract: npm Trusted Publishing is registered against "publish.yml".
+# Manual for now; nothing should publish before M1 lands a real API.
+on:
+  workflow_dispatch:
+    inputs:
+      release-type:
+        description: Semver bump for this release
+        type: choice
+        required: true
+        options: [patch, minor, major, prerelease]
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    uses: basalt-js/ci/.github/workflows/package-release.yml@main
+    permissions:
+      contents: write
+      id-token: write
+    with:
+      release-type: ${{ inputs.release-type }}

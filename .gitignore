@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+*.tgz
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# Environment
+.env
+.env.*
+
+# Logs and caches
+*.log
+.eslintcache
+.cache
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Personal Claude Code settings (shared .claude/ files are committed)
+.claude/settings.local.json
