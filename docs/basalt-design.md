@@ -1,8 +1,8 @@
 # Basalt — Design Document
 
-> **Status:** Draft 0.2 · 2026-10-30 (review decisions recorded in Part V)
+> **Status:** Draft 0.2 · 2026-10-30 (review decisions recorded in Part V); updated 2026-11-01 with O17 (port the Moku family)
 > **Baseline analysed:** [`moku-labs/core`](https://github.com/moku-labs/core) at commit `f011a48` (2026-10-11), `package.json` version `1.5.0`.
-> Moku family packages (common / web / worker / room) were read from the docs bundled with the `moku` Claude Code plugin v0.60.0. Their source was not read.
+> The §34 descriptions of the Moku family packages (common / web / worker / room) come from the docs bundled with the `moku` Claude Code plugin v0.60.0, not from their source. Since O17 those packages, and five more, are forked into `basalt-js` and their source is the starting point for each port.
 > **Package names:** packages publish under the `@basalt-js` npm org, and repos live under `github.com/basalt-js` (O13).
 
 ## How to read this document
@@ -11,7 +11,7 @@
 |---|---|---|
 | **I — Moku core, reverse-engineered** | How Moku actually works, taken from the source and spec, plus the quirks and spec drift found along the way. | Descriptive. This is the reference baseline. |
 | **II — Basalt kernel** | Basalt's kernel: what stays, what changes, and four new capabilities. | Proposed. **Decided** = agreed in review (Part V). **Decision** = a recommendation not yet reviewed. **Open** = unresolved. |
-| **III — Basalt frameworks** | Layer-2 packages built on the kernel, modelled on the Moku family. | Outline. Each framework needs its own spec later. |
+| **III — Basalt frameworks** | Layer-2 packages built on the kernel, ported from the Moku family (O17). | Outline. Each framework needs its own spec later. |
 | **IV — Repo, tooling, delivery** | Toolchain, testing, and milestones. | Proposed. |
 | **V — Decisions and open questions** | What was decided in review, and what is still undecided. | — |
 
@@ -966,10 +966,19 @@ Every Basalt framework package must:
 | Package | Kind | Contents | Kernel features it leans on |
 |---|---|---|---|
 | `@basalt-js/core` | Kernel | Part II. | — |
-| `@basalt-js/std` | Shared infra | `logService`, `envService` (validated, provider-based), `clockService` (testable time); `consoleTracer`, `memoryTracer`; branded CLI kit; test utilities (`createTestApp`, mock contexts built from `PluginCtx`). | services, tracing |
-| `@basalt-js/web` | Framework | Moku-web's model (SSG/SPA/hybrid, islands, route builder, content providers, head/SEO, build/deploy/cli). | `collect` for `head` tags, sitemap and feed entries, and route contributions; `pipe` for the content transform chain (markdown → HTML → sanitize → directives); shared state for `locale`/`stage`; tracer drives the dev CLI's live build panel; `inspect()` produces the build report. |
-| `@basalt-js/worker` | Framework | Moku-worker's model (server/endpoints, KV/D1/R2/Queues/DO keyed maps, deploy manifest). | `pipe` for request middleware (`server:request` → `Response`); `collect` for endpoint and binding manifests (deploy reads `inspect()`); lifecycle timeouts for cold start. |
-| Plugin packs (`@basalt-js/room`, …) | Pack | Built with `framework.pack(...)` (below). | — |
+| `@basalt-js/std` | Shared infra | Ported from `@moku-labs/common`. `logService`, `envService` (validated, provider-based), `clockService` (testable time); `consoleTracer`, `memoryTracer`; branded CLI kit; test utilities (`createTestApp`, mock contexts built from `PluginCtx`). | services, tracing |
+| `@basalt-js/web` | Framework | Ported from `@moku-labs/web`: Moku-web's model (SSG/SPA/hybrid, islands, route builder, content providers, head/SEO, build/deploy/cli). | `collect` for `head` tags, sitemap and feed entries, and route contributions; `pipe` for the content transform chain (markdown → HTML → sanitize → directives); shared state for `locale`/`stage`; tracer drives the dev CLI's live build panel; `inspect()` produces the build report. |
+| `@basalt-js/worker` | Framework | Ported from `@moku-labs/worker`: Moku-worker's model (server/endpoints, KV/D1/R2/Queues/DO keyed maps, deploy manifest). | `pipe` for request middleware (`server:request` → `Response`); `collect` for endpoint and binding manifests (deploy reads `inspect()`); lifecycle timeouts for cold start. |
+| Plugin packs (`@basalt-js/room`, …) | Pack | Built with `framework.pack(...)` (below). `room` is ported from `@moku-labs/room`. | — |
+| `@basalt-js/system`, `@basalt-js/native` | Framework | Ported from `@moku-labs/system` (isomorphic system API: store, notify, clipboard, tray, deep links) and `@moku-labs/native` (Node-only native packager, Tauri build). Not described in §34; each gets its spec when its port starts. | — |
+| `@basalt-js/game`, `@basalt-js/editor`, `@basalt-js/ai` | Framework | Ported from `@moku-labs/game` (2D puzzle engine on PixiJS), `@moku-labs/editor` (editor, devtools and MCP layer for `game`) and `@moku-labs/ai` (build system for AI-generated assets). Same: a spec per port. | — |
+
+**Ported, not rewritten (O17, decided).** Every package above that has a Moku counterpart (all but `core` and future packs with no Moku source) starts as a fork of it, and is then ported to the Basalt kernel. The kernel is the exception because Part II changes almost every public name and signature, so a fork would be rewritten anyway; the frameworks keep most of their domain code and change only where they touch the kernel. A port:
+
+1. Swaps `@moku-labs/core` for `@basalt-js/core` and renames along the Moku → Basalt mapping (§19): `createCoreConfig` → `defineFramework`, core plugins → services, `ctx.require` → `ctx.get`/`ctx.find`, and so on.
+2. Moves the hand-rolled patterns to kernel primitives (§35, item 5): `api.use()` middleware becomes `pipe` events, "contribute X" arrays become `collect` events, cross-plugin flags become shared state.
+3. Switches tooling and release to `@basalt-js/ci`, and the dependency on core from an exact pin to a semver range (§37).
+4. Keeps Moku's MIT `LICENSE` and its copyright line, and adds Basalt's beside it.
 
 **Plugin packs (O8, decided).** A pack is a named, ordered group of plugins made for one framework:
 
@@ -1000,12 +1009,16 @@ app.stage.lobbyCode();   // pack plugins are typed like any other plugin
 | Repo | Publishes | Contains |
 |---|---|---|
 | `core` | `@basalt-js/core` | Kernel `src/`, `tests/{unit,integration,types}`, `spec/NN-*.md`, `llms.txt` |
-| `std` | `@basalt-js/std` | Services, tracers, test utilities |
-| `web` | `@basalt-js/web` | Web framework |
-| `worker` | `@basalt-js/worker` | Workers framework |
-| one repo per pack | `@basalt-js/<pack>` | For example a multiplayer pack |
+| `std` | `@basalt-js/std` | Services, tracers, test utilities. Fork of `moku-labs/common` |
+| `web` | `@basalt-js/web` | Web framework. Fork of `moku-labs/web` |
+| `worker` | `@basalt-js/worker` | Workers framework. Fork of `moku-labs/worker` |
+| `room` | `@basalt-js/room` | Multiplayer pack for `web`. Fork of `moku-labs/room` |
+| `system`, `native`, `game`, `editor`, `ai` | `@basalt-js/<repo>` | Forks of the `moku-labs` repos of the same name |
+| one repo per pack | `@basalt-js/<pack>` | Further packs with no Moku source |
 | `ci` | `@basalt-js/ci` | Reusable CI workflows, shared Biome/ESLint config, the custom lint rules (§38), release script, `llms.txt` generator |
 | `examples` | — | Sample frameworks and apps; the port of Moku's `tests/sandbox/demo` |
+
+**Forks (O17).** Each fork is a new `basalt-js` repo carrying the Moku repo's full history, not a GitHub fork, so pull requests target our repo by default. Locally, `upstream` points at the Moku repo, fetch-only, for pulling later Moku fixes. GitHub Actions stays off on a fork until its workflows call `@basalt-js/ci`: Moku's `publish.yml` publishes `@moku-labs/*` on every push to `main`. Not forked: `moku-labs/core` and `moku-labs/claude` (Basalt has its own kernel and plugin), `moku-labs/ci` (so has Basalt), and `moku-labs/demos`, which has no license.
 
 This document moves into the `core` repo and is split into `spec/NN-*.md` once it is stable.
 
@@ -1063,8 +1076,8 @@ Coverage gate: 90% (Moku's level), with `src/**/types.ts` excluded.
 | M4 | Shared state | Readonly view, actions, `basalt:shared`, per-instance isolation tests |
 | M5 | Introspection and tracing: `inspect()`, static inspection, tracer fan-out, `contextStore` injection, std tracers | Manifest snapshot tests; zero-cost-when-off benchmark |
 | M6 | Spec split into `spec/NN-*.md`, `llms.txt`, prompt fragment, README | Docs reviewed; prompt fragment ≤ ~1500 tokens |
-| M7 | `@basalt-js/std` | log/env/clock services, tracers, test utils |
-| M8+ | `@basalt-js/web`, `@basalt-js/worker`, packs | Per-framework specs first; the worker spec settles O7 |
+| M7 | `@basalt-js/std`, ported from `moku-labs/common` | log/env/clock services, tracers, test utils |
+| M8+ | Ports of `web`, `worker`, `room`, then `system`, `native`, `game`, `editor`, `ai` | Per-framework specs first; each port passes its Moku tests on `@basalt-js/core`; the worker spec settles O7 |
 
 ---
 
@@ -1086,10 +1099,16 @@ Coverage gate: 90% (Moku's level), with `src/**/types.ts` excluded.
 | O10 | Config validation? | Standard Schema libraries (`config: z.object({…})`). Plain default objects still work. | §21.1 |
 | O11 | Let apps replace a default plugin? | No. | §17 |
 | O12 | Runtime safety checks? | On (`"full"`) by default. `compose` or `createApp` can set `"minimal"`. | §23 |
+| O13 | npm scope and GitHub org? | `basalt-js` on both: packages are `@basalt-js/*`, repos are `github.com/basalt-js/*`. Both orgs created 2026-10-30. (`@basalt` belongs to another, unrelated org.) | §37 |
 | O14 | Release tool? | A small custom script in the shared `ci` repo. | §37 |
 | O15 | Required config in the `createApp` types? | Yes, for schema fields without defaults that the framework doesn't supply. | §21.1 |
 | O16 | Packs with default config, or packs depending on packs? | No and no. | §36 |
-| O13 | npm scope and GitHub org? | `basalt-js` on both: packages are `@basalt-js/*`, repos are `github.com/basalt-js/*`. Both orgs created 2026-10-30. (`@basalt` belongs to another, unrelated org.) | §37 |
+
+## Decided 2026-11-01
+
+| # | Question | Decision | Where |
+|---|---|---|---|
+| O17 | Rewrite the Moku family, or fork it? | Fork every Moku framework and pack, keeping history, and port each to the Basalt kernel. `common` becomes `std`. Not forked: `core`, `ci`, `demos` and the Claude plugin (§37 says why). | §36, §37 |
 
 ## Still open
 
