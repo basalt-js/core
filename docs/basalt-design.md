@@ -1,8 +1,8 @@
 # Basalt — Design Document
 
-> **Status:** Draft 0.2 · 2026-10-30 (review decisions recorded in Part V)
+> **Status:** Draft 0.2 · 2026-10-30 (review decisions recorded in Part V); updated 2026-11-01 with O17 (port the Moku family)
 > **Baseline analysed:** [`moku-labs/core`](https://github.com/moku-labs/core) at commit `f011a48` (2026-10-11), `package.json` version `1.5.0`.
-> Moku family packages (common / web / worker / room) were read from the docs bundled with the `moku` Claude Code plugin v0.60.0. Their source was not read.
+> The §34 descriptions of the Moku family packages (common / web / worker / room) come from the docs bundled with the `moku` Claude Code plugin v0.60.0, not from their source. Since O17 those packages, and five more, are forked into `basalt-js` and their source is the starting point for each port.
 > **Package names:** packages publish under the `@basalt-js` npm org, and repos live under `github.com/basalt-js` (O13).
 
 ## How to read this document
@@ -11,7 +11,7 @@
 |---|---|---|
 | **I — Moku core, reverse-engineered** | How Moku actually works, taken from the source and spec, plus the quirks and spec drift found along the way. | Descriptive. This is the reference baseline. |
 | **II — Basalt kernel** | Basalt's kernel: what stays, what changes, and four new capabilities. | Proposed. **Decided** = agreed in review (Part V). **Decision** = a recommendation not yet reviewed. **Open** = unresolved. |
-| **III — Basalt frameworks** | Layer-2 packages built on the kernel, modelled on the Moku family. | Outline. Each framework needs its own spec later. |
+| **III — Basalt frameworks** | Layer-2 packages built on the kernel, ported from the Moku family (O17). | Outline. Each framework needs its own spec later. |
 | **IV — Repo, tooling, delivery** | Toolchain, testing, and milestones. | Proposed. |
 | **V — Decisions and open questions** | What was decided in review, and what is still undecided. | — |
 
@@ -1014,7 +1014,7 @@ app.stage.lobbyCode();   // pack plugins are typed like any other plugin
 | `worker` | `@basalt-js/worker` | Workers framework. Fork of `moku-labs/worker` |
 | `room` | `@basalt-js/room` | Multiplayer pack for `web`. Fork of `moku-labs/room` |
 | `system`, `native`, `game`, `editor`, `ai` | `@basalt-js/<repo>` | Forks of the `moku-labs` repos of the same name |
-| one repo per pack | `@basalt-js/<pack>` | For example a multiplayer pack |
+| one repo per pack | `@basalt-js/<pack>` | Further packs with no Moku source |
 | `ci` | `@basalt-js/ci` | Reusable CI workflows, shared Biome/ESLint config, the custom lint rules (§38), release script, `llms.txt` generator |
 | `examples` | — | Sample frameworks and apps; the port of Moku's `tests/sandbox/demo` |
 
