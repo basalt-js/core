@@ -973,10 +973,10 @@ Every Basalt framework package must:
 | `@basalt-js/system`, `@basalt-js/native` | Framework | Ported from `@moku-labs/system` (isomorphic system API: store, notify, clipboard, tray, deep links) and `@moku-labs/native` (Node-only native packager, Tauri build). Not described in §34; each gets its spec when its port starts. | — |
 | `@basalt-js/game`, `@basalt-js/editor`, `@basalt-js/ai` | Framework | Ported from `@moku-labs/game` (2D puzzle engine on PixiJS), `@moku-labs/editor` (editor, devtools and MCP layer for `game`) and `@moku-labs/ai` (build system for AI-generated assets). Same: a spec per port. | — |
 
-**Ported, not rewritten (O17, decided).** Every package above except `core` starts as a fork of its Moku package, and is then ported to the Basalt kernel. The kernel is the exception because Part II changes almost every public name and signature, so a fork would be rewritten anyway; the frameworks keep most of their domain code and change only where they touch the kernel. A port:
+**Ported, not rewritten (O17, decided).** Every package above that has a Moku counterpart (all but `core` and future packs with no Moku source) starts as a fork of it, and is then ported to the Basalt kernel. The kernel is the exception because Part II changes almost every public name and signature, so a fork would be rewritten anyway; the frameworks keep most of their domain code and change only where they touch the kernel. A port:
 
 1. Swaps `@moku-labs/core` for `@basalt-js/core` and renames along the Moku → Basalt mapping (§19): `createCoreConfig` → `defineFramework`, core plugins → services, `ctx.require` → `ctx.get`/`ctx.find`, and so on.
-2. Moves the hand-rolled patterns to kernel primitives (§35.5): `api.use()` middleware becomes `pipe` events, "contribute X" arrays become `collect` events, cross-plugin flags become shared state.
+2. Moves the hand-rolled patterns to kernel primitives (§35, item 5): `api.use()` middleware becomes `pipe` events, "contribute X" arrays become `collect` events, cross-plugin flags become shared state.
 3. Switches tooling and release to `@basalt-js/ci`, and the dependency on core from an exact pin to a semver range (§37).
 4. Keeps Moku's MIT `LICENSE` and its copyright line, and adds Basalt's beside it.
 
@@ -1099,11 +1099,16 @@ Coverage gate: 90% (Moku's level), with `src/**/types.ts` excluded.
 | O10 | Config validation? | Standard Schema libraries (`config: z.object({…})`). Plain default objects still work. | §21.1 |
 | O11 | Let apps replace a default plugin? | No. | §17 |
 | O12 | Runtime safety checks? | On (`"full"`) by default. `compose` or `createApp` can set `"minimal"`. | §23 |
+| O13 | npm scope and GitHub org? | `basalt-js` on both: packages are `@basalt-js/*`, repos are `github.com/basalt-js/*`. Both orgs created 2026-10-30. (`@basalt` belongs to another, unrelated org.) | §37 |
 | O14 | Release tool? | A small custom script in the shared `ci` repo. | §37 |
 | O15 | Required config in the `createApp` types? | Yes, for schema fields without defaults that the framework doesn't supply. | §21.1 |
 | O16 | Packs with default config, or packs depending on packs? | No and no. | §36 |
-| O17 | Rewrite the Moku family, or fork it? (2026-11-01) | Fork every Moku package except `core` and the Claude plugin, keeping history, and port each to the Basalt kernel. `common` becomes `std`. | §36, §37 |
-| O13 | npm scope and GitHub org? | `basalt-js` on both: packages are `@basalt-js/*`, repos are `github.com/basalt-js/*`. Both orgs created 2026-10-30. (`@basalt` belongs to another, unrelated org.) | §37 |
+
+## Decided 2026-11-01
+
+| # | Question | Decision | Where |
+|---|---|---|---|
+| O17 | Rewrite the Moku family, or fork it? | Fork every Moku framework and pack, keeping history, and port each to the Basalt kernel. `common` becomes `std`. Not forked: `core`, `ci`, `demos` and the Claude plugin (§37 says why). | §36, §37 |
 
 ## Still open
 
